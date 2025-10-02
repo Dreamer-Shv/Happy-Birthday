@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your Birthday Memories</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0; padding: 0;
+      font-family: 'Nunito', sans-serif;
+      background: #f8f0f8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      user-select: none;
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+    .container {
+      width: 95vw;
+      max-width: 420px;
+      background: white;
+      border-radius: 20px;
+      padding: 15px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 15px;
+      color: #663399;
+      user-select: text;
+    }
+    #photo-stack {
+      position: relative;
+      margin: 0 auto;
+      perspective: 800px;
+      height: auto;
+      min-height: 380px;
+      overflow: visible;
+    }
+    .stacked-photo {
+      position: absolute;
+      width: 90vw;
+      max-width: 360px;
+      height: auto;
+      max-height: 350px;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(102, 51, 153, 0.3);
+      object-fit: contain;
+      transition: top 0.3s ease, left 0.3s ease;
+      cursor: grab;
+      -webkit-user-drag: none;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .stacked-photo:active {
+      cursor: grabbing;
+    }
+    .message-box {
+      margin-top: 15px; /* lower below images */
+      min-height: 140px;
+      max-width: 360px;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 1.05rem;
+      color: #444;
+      text-align: left;
+      padding: 0 15px;
+      user-select: text;
+      line-height: 1.5;
+      border-radius: 12px;
+      background: #f0e6ff;
+      box-shadow: 0 6px 15px rgba(102, 51, 153, 0.1);
+      white-space: pre-wrap; /* preserve line breaks */
+    }
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      max-width: 360px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .btn {
+      background: #663399;
+      border: none;
+      border-radius: 30px;
+      color: #fff;
+      padding: 12px 25px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(102, 51, 153, 0.3);
+      transition: background 0.3s ease;
+      user-select: none;
+      flex: 1;
+      margin: 0 5px;
+    }
+    .btn:hover {
+      background: #7d57b3;
+    }
+    @media (min-width: 600px) {
+      .stacked-photo {
+        width: 360px;
+        max-height: 350px;
+      }
+      .container, #photo-stack, .message-box, .controls {
+        max-width: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Your Memories</h2>
+    <div id="photo-stack">
+      <!-- Images stacked by JS -->
+    </div>
+    <div id="message" class="message-box">
+      <!-- Text message changes with the image -->
+    </div>
+    <div class="controls">
+       <audio id="birthday-music" src="happy-birthday.mp3" autoplay loop></audio>
+      <button id="prevBtn" class="btn">← Previous</button>
+      <button id="nextBtn" class="btn">Next →</button>
+    </div>
+  </div>
+
+  <script>
+    const imageFiles = [
+      "IMG-20251002-WA0003.jpg", "IMG-20251002-WA0004.jpg", "IMG-20251002-WA0005.jpg",
+      "IMG-20251002-WA0006.jpg", "IMG-20251002-WA0007.jpg", "IMG-20251002-WA0008.jpg",
+      "IMG-20251002-WA0009.jpg", "IMG-20251002-WA0010.jpg", "IMG-20251002-WA0011.jpg",
+      "IMG-20251002-WA0012.jpg", "IMG-20251002-WA0013.jpg", "IMG-20251002-WA0014.jpg",
+      "IMG-20251002-WA0015.jpg", "IMG-20251002-WA0016.jpg", "IMG-20251002-WA0017.jpg",
+      "IMG-20251002-WA0018.jpg", "IMG-20251002-WA0019.jpg", "IMG-20251002-WA0020.jpg",
+      "IMG-20251002-WA0021.jpg", "IMG-20251002-WA0022.jpg", "IMG-20251002-WA0023.jpg"
+    ];
+
+    // Messages per image index, keep in sync with imageFiles length
+    const messages = [
+`Happy Birthday, beautiful! 🌸  
+You light up my life every single day.  
+I love you to the moon and back! ❤️`,
+
+`To the most amazing friend,  
+You deserve all the love and happiness today.  
+Cheers to the beautiful soul you are! 🥳`,
+
+`Girl
+You’re one in a million!  
+Stay strong, stay awesome, stay you! 💪✨`,
+
+`May your birthday be filled with  
+sweet surprises and endless love.  
+Thank you for being amazing! 🎂`,
+
+`Your smile is contagious,  
+your heart is pure,  
+and your friendship is priceless.  
+Love you endlessly! 😘`,
+
+`Growing up with you is a blessing.  
+Here’s to many more memories together.  
+Happy day! 🎉`,
+
+`You inspire me every day.  
+May your dreams come true this year.  
+Wishing you greatness ahead! 💫`,
+
+`For the one who shines the brightest,  
+may this birthday shine as bright as your soul.  
+Love always! 💖`,
+
+`Enough cake? Never!  
+Let’s celebrate your awesomeness!  
+Happy, happy birthday! 🍰`,
+
+`To my sister by heart,  
+You mean the world to me.  
+Let’s make this year spectacular! 🌟`,
+
+`Every moment with you is a treasure.  
+Thanks for all the laughs and love.  
+Happy birthday, bestie! 💕`,
+
+`You bring colors to my world.  
+May your day be as bright and vibrant as you. 🌈`,
+
+`Celebrating YOU today and always!  
+Thanks for being you - wonderful and kind. 🌹`,
+
+`Incredible inside and out,  
+may all your wishes come true.  
+Cheers, love! 🥂`,
+
+`To my forever confidante,  
+here’s to unforgettable fun this year.  
+Love you so much! 😍`,
+
+`May this year unlock doors to success and joy.  
+You deserve only the best! 💎`,
+
+`Sending hugs and kisses on your special day.  
+You’re a gift to everyone around you! 🎀`,
+
+`Keep shining, keep smiling,  
+the world is yours.  
+Happy birthday! 🎈`,
+
+`May laughter and good vibes surround you today.  
+Here’s to endless happiness! 😊`,
+
+`Thank you for your friendship and love.  
+Let’s cherish more moments ahead. 🤗`,
+
+`With all my heart,  
+I wish you an incredible birthday filled with love. 💝`
+    ];
+
+    let currentIndex = 0;
+    let startX = 0;
+    let isDragging = false;
+    const stack = document.getElementById('photo-stack');
+    const messageBox = document.getElementById('message');
+
+    function bindDragEvents(img) {
+      img.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        img.style.cursor = 'grabbing';
+      });
+
+      img.addEventListener('mouseup', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        img.style.cursor = 'grab';
+        const diffX = e.clientX - startX;
+        if (diffX > 50 && currentIndex > 0) currentIndex--;
+        else if (diffX < -50 && currentIndex < imageFiles.length - 1) currentIndex++;
+        renderStack();
+      });
+
+      img.addEventListener('mouseleave', () => {
+        if (isDragging) {
+          isDragging = false;
+          img.style.cursor = 'grab';
+        }
+      });
+
+      // Touch support
+      img.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        startX = e.touches[0].clientX;
+      });
+
+      img.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        const diffX = e.changedTouches[0].clientX - startX;
+        if (diffX > 50 && currentIndex > 0) currentIndex--;
+        else if (diffX < -50 && currentIndex < imageFiles.length - 1) currentIndex++;
+        renderStack();
+      });
+    }
+
+    function renderStack() {
+      stack.innerHTML = '';
+      let visibleCount = Math.min(3, imageFiles.length - currentIndex);
+      for (let i = currentIndex; i < currentIndex + visibleCount; i++) {
+        const img = document.createElement('img');
+        img.src = `uploads/${imageFiles[i]}`;
+        img.className = 'stacked-photo';
+        img.style.zIndex = (imageFiles.length - i);
+        img.style.top = `${15 * (i - currentIndex)}px`;
+        img.style.left = `${15 * (i - currentIndex)}px`;
+        img.alt = `Memory ${i + 1}`;
+
+        if (i === currentIndex) {
+          bindDragEvents(img);
+        }
+        stack.appendChild(img);
+      }
+
+      // Update message
+      messageBox.textContent = messages[currentIndex] || '';
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderStack();
+      }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      if (currentIndex < imageFiles.length - 1) {
+        currentIndex++;
+        renderStack();
+      }
+    });
+
+    // Swipe navigation for mobile on whole stack container
+    stack.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+    });
+
+    stack.addEventListener('touchend', e => {
+      let endX = e.changedTouches[0].clientX;
+      if (endX - startX > 50) {
+        if (currentIndex > 0) currentIndex--;
+      } else if (startX - endX > 50) {
+        if (currentIndex < imageFiles.length - 1) currentIndex++;
+      }
+      renderStack();
+    });
+
+    renderStack();
+  </script>
+</body>
+</html>

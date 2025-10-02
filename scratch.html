@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scratch to Reveal 🎉</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0; padding: 0;
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(135deg, #fbd3e9 0%, #bb377d 100%);
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh;
+      user-select: none;
+    }
+    .container {
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      position: relative;
+    }
+    h2 {
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: #fff;
+      text-shadow: 1px 1px 4px #0007;
+    }
+    .canvas-container {
+      position: relative;
+      width: 350px;
+      height: 400px;
+      margin: auto;
+      border-radius: 18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+    canvas {
+      position: absolute;
+      top: 0; left: 0;
+      border-radius: 18px;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      touch-action: none;
+    }
+    #bgCanvas {
+      z-index: 1;
+      width: 350px;
+      height: 400px;
+    }
+    #scratchCanvas {
+      z-index: 2;
+      width: 350px;
+      height: 400px;
+      background-color: transparent;
+    }
+    .btn {
+      margin-top: 20px;
+      cursor: not-allowed;
+      opacity: 0.5;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 15px 40px;
+      border-radius: 40px;
+      border: none;
+      background: #ccc;
+      color: white;
+      transition: background 0.3s ease, opacity 0.3s ease;
+    }
+    .btn:not(:disabled) {
+      cursor: pointer;
+      opacity: 1;
+      background: #f76b1c;
+      box-shadow: 0 6px 16px rgba(247,107,28,0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Scratch off the card below to reveal your surprise!</h2>
+    <div class="canvas-container">
+       <audio id="birthday-music" src="happy-birthday.mp3" autoplay loop></audio>
+      <canvas id="bgCanvas" width="350" height="400"></canvas>
+      <canvas id="scratchCanvas" width="350" height="400"></canvas>
+    </div>
+    <button id="nextBtn" class="btn" disabled>Next</button>
+  </div>
+
+  <script>
+    // Canvases and contexts
+    const bgCanvas = document.getElementById('bgCanvas');
+    const bgCtx = bgCanvas.getContext('2d');
+    const scratchCanvas = document.getElementById('scratchCanvas');
+    const ctx = scratchCanvas.getContext('2d', { willReadFrequently: true });
+    const nextBtn = document.getElementById('nextBtn');
+
+    // Load and draw background image
+    const bgImage = new Image();
+    bgImage.src = './uploads/IMG-20251002-WA0007.jpg';
+    bgImage.onload = () => {
+      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+      bgCtx.drawImage(bgImage, 0, 0, bgCanvas.width, bgCanvas.height);
+      initScratch();
+    };
+    bgImage.onerror = () => {
+      alert('Failed to load the birthday image! Check path and file name.');
+    };
+
+    function initScratch() {
+      // Fill scratch canvas with solid cover color
+      ctx.fillStyle = '#f76b1c';
+      ctx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+
+      // Set composite mode to erase for scratching
+      ctx.globalCompositeOperation = 'destination-out';
+
+      let drawing = false;
+
+      // Mouse events
+      scratchCanvas.addEventListener('mousedown', () => drawing = true);
+      scratchCanvas.addEventListener('mouseup', () => drawing = false);
+      scratchCanvas.addEventListener('mouseout', () => drawing = false);
+      scratchCanvas.addEventListener('mousemove', draw);
+
+      // Touch events
+      scratchCanvas.addEventListener('touchstart', e => {
+        drawing = true;
+        draw(e.touches[0]);
+        e.preventDefault();
+      });
+      scratchCanvas.addEventListener('touchend', () => drawing = false);
+      scratchCanvas.addEventListener('touchmove', e => {
+        draw(e.touches[0]);
+        e.preventDefault();
+      });
+
+      function getPointerPos(e) {
+        const rect = scratchCanvas.getBoundingClientRect();
+        return {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        };
+      }
+
+      function draw(e) {
+        if(!drawing) return;
+        const pos = getPointerPos(e);
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 25, 0, Math.PI * 2);
+        ctx.fill();
+        checkReveal();
+      }
+    }
+
+    let lastCheck = 0;
+
+    function checkReveal() {
+      const now = performance.now();
+      if(now - lastCheck < 200) return;
+      lastCheck = now;
+
+      const imageData = ctx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height);
+      let transparentPixels = 0;
+      const totalPixels = imageData.width * imageData.height;
+      const data = imageData.data;
+
+      // Sample every 10th pixel
+      for(let i = 3; i < data.length; i += 4 * 10) {
+        if(data[i] < 128) transparentPixels++;
+      }
+
+      const threshold = (totalPixels * 0.5) / 10;
+      if(transparentPixels > threshold) {
+        nextBtn.disabled = false;
+        nextBtn.style.background = '#f76b1c';
+      }
+    }
+
+    nextBtn.onclick = () => {
+      window.location.href = 'final.html';
+    };
+  </script>
+</body>
+</html>

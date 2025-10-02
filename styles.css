@@ -1,0 +1,57 @@
+body, html {
+  height: 100%;
+  margin: 0; padding: 0;
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+  display: flex; justify-content: center; align-items: center;
+  color: #222;
+  overflow: hidden;
+}
+
+#noButton {
+  position: fixed;
+  left: 150px;
+  top: calc(50% + 50px);
+  transition: transform 0.3s ease;
+  z-index: 10;
+}
+
+
+.container {
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+}
+
+.title {
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  user-select: none;
+  text-shadow: 2px 2px 6px #fff3;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-around;
+}
+
+.btn {
+  cursor: pointer;
+  background: white;
+  border-radius: 30px;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 15px 40px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  color: #f76b1c;
+  transition: background 0.3s ease;
+  position: relative;
+}
+
+.btn:hover {
+  background: #f76b1c;
+  color: white;
+  box-shadow: 0 7px 15px rgba(247,107,28,0.5);
+  transform: scale(1.05);
+}
